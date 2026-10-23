@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Student Management Dashboard - Manage Students, View Stats, AI Assistant">
+    <title>Dashboard - Student Management System</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <div class="dashboard">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                🎓 Student MS
+                <span>Management System</span>
+            </div>
+
+            <ul class="nav-links">
+                <li>
+                    <a href="#" class="active" data-section="students" id="navStudents">
+                        <span class="icon">📋</span> Students
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-section="addStudent" id="navAdd">
+                        <span class="icon">➕</span> Add Student
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-section="statistics" id="navStats">
+                        <span class="icon">📊</span> Statistics
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-section="aiChat" id="navAI">
+                        <span class="icon">🤖</span> AI Assistant
+                    </a>
+                </li>
+                <li>
+                    <a href="#" data-section="apiInfo" id="navAPI">
+                        <span class="icon">🔌</span> API Info
+                    </a>
+                </li>
+            </ul>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">A</div>
+                    <div class="user-details">
+                        <div class="name" id="userName">Admin</div>
+                        <div class="role" id="userRole">admin</div>
+                    </div>
+                </div>
+                <!-- Logout Button with Event -->
+                <button class="btn btn-outline btn-sm" id="logoutBtn" style="width: 100%; margin-top: 12px;">
+                    🚪 Logout
+                </button>
+                <div class="ls-indicator" style="margin-top: 8px;">
+                    <span class="dot"></span>
+                    <span>Session: LocalStorage</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <h2 id="pageTitle">Students</h2>
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search students...">
+                </div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="stats-grid" id="statsCards">
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-value" id="totalStudents">0</div>
+                    <div class="stat-label">Total Students</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-value" id="activeStudents">0</div>
+                    <div class="stat-label">Active</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🎓</div>
+                    <div class="stat-value" id="graduatedStudents">0</div>
+                    <div class="stat-label">Graduated</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">📈</div>
+                    <div class="stat-value" id="avgCGPA">0.0</div>
+                    <div class="stat-label">Avg CGPA</div>
+                </div>
+            </div>
+
+            <!-- ============ SECTION: Students Table ============ -->
+            <div class="section-panel active" id="sectionStudents">
+                <!-- Filter Bar -->
+                <div class="filter-bar">
+                    <select id="filterDepartment">
+                        <option value="">All Departments</option>
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="Electronics">Electronics</option>
+                        <option value="Mechanical">Mechanical</option>
+                        <option value="Civil">Civil</option>
+                        <option value="Information Technology">Information Technology</option>
+                    </select>
+                    <select id="filterStatus">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                        <option value="graduated">Graduated</option>
+                    </select>
+                    <button class="btn btn-outline btn-sm" id="refreshBtn">🔄 Refresh</button>
+                    <button class="btn btn-success btn-sm" id="exportBtn">📥 Export Data</button>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>📋 Student Records</h3>
+                        <div class="table-actions">
+                            <button class="btn btn-primary btn-sm" id="addStudentBtn">➕ Add Student</button>
+                        </div>
+                    </div>
+                    <table id="studentsTable">
+                        <thead>
+                            <tr>
+                                <th>Roll No</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Semester</th>
+                                <th>CGPA</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="studentsTableBody">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ============ SECTION: Add Student Form ============ -->
+            <div class="section-panel" id="sectionAddStudent">
+                <div class="table-container" style="max-width: 600px;">
+                    <div class="table-header">
+                        <h3>➕ Add New Student</h3>
+                    </div>
+                    <form id="addStudentForm" style="padding: 24px;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="addRollNo">Roll Number *</label>
+                                <input type="text" id="addRollNo" placeholder="CS2024005" required>
+                                <div class="error-message" id="rollNoError">Roll number is required</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="addName">Full Name *</label>
+                                <input type="text" id="addName" placeholder="John Doe" required>
+                                <div class="error-message" id="nameError">Name is required</div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="addEmail">Email *</label>
+                                <input type="email" id="addEmail" placeholder="john@college.edu" required>
+                                <div class="error-message" id="emailError">Valid email is required</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="addDept">Department *</label>
+                                <select id="addDept" required>
+                                    <option value="">Select</option>
+                                    <option value="Computer Science">Computer Science</option>
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="Mechanical">Mechanical</option>
+                                    <option value="Civil">Civil</option>
+                                    <option value="Information Technology">IT</option>
+                                </select>
+                                <div class="error-message" id="deptError">Department is required</div>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="addSemester">Semester *</label>
+                                <input type="number" id="addSemester" min="1" max="8" placeholder="1-8" required>
+                                <div class="error-message" id="semError">Semester (1-8) is required</div>
+                            </div>
+                            <div class="form-group">
+                                <label for="addCGPA">CGPA</label>
+                                <input type="number" id="addCGPA" step="0.01" min="0" max="10" placeholder="0.00 - 10.00">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="addPhone">Phone</label>
+                            <input type="tel" id="addPhone" placeholder="9876543210">
+                        </div>
+                        <button type="submit" class="btn btn-primary" id="submitStudentBtn">
+                            ➕ Add Student
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ============ SECTION: Statistics ============ -->
+            <div class="section-panel" id="sectionStatistics">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>📊 Department-wise Statistics</h3>
+                        <button class="btn btn-outline btn-sm" id="refreshStatsBtn">🔄 Refresh</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Department</th>
+                                <th>Total Students</th>
+                                <th>Active</th>
+                                <th>Avg CGPA</th>
+                                <th>Highest CGPA</th>
+                            </tr>
+                        </thead>
+                        <tbody id="statsTableBody">
+                            <!-- Populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ============ SECTION: AI Chat ============ -->
+            <div class="section-panel" id="sectionAiChat">
+                <div class="chat-container">
+                    <div class="table-header">
+                        <h3>🤖 AI Assistant (Groq LLaMA)</h3>
+                        <button class="btn btn-outline btn-sm" id="clearChatBtn">🗑️ Clear Chat</button>
+                    </div>
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="chat-message ai">
+                            👋 Hi! I'm your AI assistant powered by Groq's LLaMA model. Ask me anything about academics, courses, or student life!
+                        </div>
+                    </div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chatInput" placeholder="Ask a question... (e.g., What is machine learning?)">
+                        <button class="btn btn-primary" id="sendChatBtn">Send ➤</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============ SECTION: API Info ============ -->
+            <div class="section-panel" id="sectionApiInfo">
+                <div class="table-container">
+                    <div class="table-header">
+                        <h3>🔌 API Endpoints Reference</h3>
+                        <button class="btn btn-primary btn-sm" id="testApiBtn">🧪 Test Public API</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Endpoint</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="badge badge-active">GET</span></td>
+                                <td>/api/students</td>
+                                <td>Get all students (supports ?department, ?status, ?search)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-active">GET</span></td>
+                                <td>/api/students/:id</td>
+                                <td>Get a single student by ID</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge" style="background:rgba(108,99,255,0.15);color:var(--accent-primary)">POST</span></td>
+                                <td>/api/students</td>
+                                <td>Create a new student</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge" style="background:rgba(255,167,38,0.15);color:var(--accent-warning)">PUT</span></td>
+                                <td>/api/students/:id</td>
+                                <td>Update a student</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-inactive">DELETE</span></td>
+                                <td>/api/students/:id</td>
+                                <td>Delete a student</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-active">GET</span></td>
+                                <td>/api/students/stats/summary</td>
+                                <td>Get department-wise statistics</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge" style="background:rgba(108,99,255,0.15);color:var(--accent-primary)">POST</span></td>
+                                <td>/api/auth/login</td>
+                                <td>Authenticate user (returns user object)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge" style="background:rgba(108,99,255,0.15);color:var(--accent-primary)">POST</span></td>
+                                <td>/api/auth/register</td>
+                                <td>Register new user</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge" style="background:rgba(108,99,255,0.15);color:var(--accent-primary)">POST</span></td>
+                                <td>/api/ai/chat</td>
+                                <td>Send question to Groq AI (LLaMA model)</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-active">GET</span></td>
+                                <td>/api/ai/history/:userId</td>
+                                <td>Get AI chat history for a user</td>
+                            </tr>
+                            <tr>
+                                <td><span class="badge badge-active">GET</span></td>
+                                <td>/api/public/info</td>
+                                <td>Public API - No auth required</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- API Response Display -->
+                <div class="table-container" style="margin-top: 20px;">
+                    <div class="table-header">
+                        <h3>📡 API Response</h3>
+                    </div>
+                    <pre id="apiResponse" style="padding: 24px; color: var(--accent-success); font-size: 13px; white-space: pre-wrap; max-height: 300px; overflow-y: auto;">
+Click "Test Public API" to see a response here...
+                    </pre>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Edit Student Modal -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>✏️ Edit Student</h3>
+                <button class="modal-close" id="closeModal">&times;</button>
+            </div>
+            <form id="editStudentForm">
+                <input type="hidden" id="editId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editName">Name</label>
+                        <input type="text" id="editName">
+                    </div>
+                    <div class="form-group">
+                        <label for="editEmail">Email</label>
+                        <input type="email" id="editEmail">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editDept">Department</label>
+                        <select id="editDept">
+                            <option value="Computer Science">Computer Science</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Mechanical">Mechanical</option>
+                            <option value="Civil">Civil</option>
+                            <option value="Information Technology">IT</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editSemester">Semester</label>
+                        <input type="number" id="editSemester" min="1" max="8">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editCGPA">CGPA</label>
+                        <input type="number" id="editCGPA" step="0.01" min="0" max="10">
+                    </div>
+                    <div class="form-group">
+                        <label for="editStatus">Status</label>
+                        <select id="editStatus">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="graduated">Graduated</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline" id="cancelEdit">Cancel</button>
+                    <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/dashboard.js"></script>
+</body>
+</html>
