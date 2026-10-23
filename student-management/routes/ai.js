@@ -41,8 +41,8 @@ router.post('/chat', async (req, res) => {
             });
         }
 
-        // Call Groq API - this is the external API call
-        // Using LLaMA 3 model via Groq's fast inference
+        // Call Groq API - using active model on Groq
+        const selectedModel = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
         const chatCompletion = await groq.chat.completions.create({
             messages: [
                 {
@@ -54,19 +54,23 @@ router.post('/chat', async (req, res) => {
                     content: question
                 }
             ],
-            model: 'llama-3.3-70b-versatile',   // Groq's fast LLaMA model
-            temperature: 0.7,                     // Creativity level
-            max_tokens: 500                       // Limit response length
+            model: selectedModel,
+            temperature: 0.7,
+            max_tokens: 500
         });
 
         const answer = chatCompletion.choices[0]?.message?.content || 'No response generated.';
 
-        // Save to database for chat history
+        // Save to database for chat history (non-blocking if foreign key missing)
         if (userId) {
-            await pool.execute(
-                'INSERT INTO ai_chat_history (user_id, question, answer) VALUES (?, ?, ?)',
-                [userId, question, answer]
-            );
+            try {
+                await pool.execute(
+                    'INSERT INTO ai_chat_history (user_id, question, answer) VALUES (?, ?, ?)',
+                    [userId, question, answer]
+                );
+            } catch (dbErr) {
+                console.warn('Warning: Could not save chat to DB history:', dbErr.message);
+            }
         }
 
         res.json({
@@ -74,7 +78,7 @@ router.post('/chat', async (req, res) => {
             data: {
                 question: question,
                 answer: answer,
-                model: 'llama-3.3-70b-versatile',
+                model: selectedModel,
                 timestamp: new Date().toISOString()
             }
         });
